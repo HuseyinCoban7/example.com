@@ -1,41 +1,40 @@
 pipeline {
-  agent {
-    docker {
-      image 'maven:3.9.9-eclipse-temurin-17'
-      args  '-v $HOME/.m2:/root/.m2'
-    }
-  }
+    agent any
 
-  environment {
-    TARGET_URL = 'https://example.com'
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+        TARGET_URL = "https://example.com"
     }
 
-    stage('URL Check (JUnit)') {
-      steps {
-        sh '''
-          set -e
-          mvn -q -e -f demo/pom.xml -DtargetUrl=${TARGET_URL} test
-        '''
-      }
-      post {
-        always {
-          junit 'demo/target/surefire-reports/*.xml'
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-      }
-    }
 
-    stage('Deploy') {
-      steps {
-        echo "Deploy çalıştı çünkü URL erişilebilir ve testler geçti."
-        // buraya deploy komutunu koyacaksın (ör: sh '...deploy...')
-      }
+        stage('URL Check (JUnit)') {
+            steps {
+                dir('demo') {
+                    sh '''
+                        set -e
+                        chmod +x mvnw
+                        ./mvnw -q -e -DtargetUrl=${TARGET_URL} test
+                    '''
+                }
+            }
+            post {
+                always {
+                    junit 'demo/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "✅ URL reachable, Deploy stage running..."
+                // burada deploy komutun neyse
+                // sh './deploy.sh'
+            }
+        }
     }
-  }
 }
