@@ -1,37 +1,31 @@
 pipeline {
-  agent any
-
-  options {
-    timestamps()
-  }
+  agent none
 
   stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
     stage('URL Check (JUnit)') {
+      agent {
+        docker {
+          image 'maven:3.9.6-eclipse-temurin-17'
+          args '-v $HOME/.m2:/root/.m2'
+        }
+      }
       steps {
         dir('url-check') {
-          sh 'mvn -q -e test'
+          sh 'mvn -q test'
         }
       }
       post {
         always {
-          // test raporu Jenkins'te görünür
-          junit allowEmptyResults: true, testResults: 'url-check/target/surefire-reports/*.xml'
+          junit 'url-check/target/surefire-reports/*.xml'
         }
       }
     }
 
     stage('Deploy') {
-      // Önceki stage başarısızsa buraya zaten gelmez (pipeline fail olur)
+      agent any
       steps {
-        echo "Deploy çalışıyor..."
-        // burada kendi deploy komutların olur:
-        // sh './deploy.sh'  veya  sh 'docker compose up -d'  vs.
+        echo 'Deploy çalıştı (URL erişilebilir olduğu için).'
+        // burada gerçek deploy komutların olur
       }
     }
   }
