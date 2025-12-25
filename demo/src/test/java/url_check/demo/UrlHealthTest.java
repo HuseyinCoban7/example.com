@@ -34,9 +34,10 @@ class UrlHealthTest {
             }
         }
 
-        // 2xx-3xx kabul
-        assertTrue(code >= 200 && code < 400,
-                "URL erişilemedi! url=" + targetUrl + " status=" + code +
-                        (last != null ? " lastError=" + last.getMessage() : ""));
+        assertTrue(code == 200,
+        "URL erişilemedi! url=" + targetUrl + " status=" + code +
+                (last != null ? " lastError=" + last.getMessage() : ""));
+
     }
 }
+
