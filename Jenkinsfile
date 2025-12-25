@@ -1,12 +1,13 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'maven:3.9.9-eclipse-temurin-17'
+      args  '-v $HOME/.m2:/root/.m2'
+    }
+  }
 
   environment {
     TARGET_URL = 'https://example.com'
-  }
-
-  options {
-    timestamps()
   }
 
   stages {
@@ -18,13 +19,10 @@ pipeline {
 
     stage('URL Check (JUnit)') {
       steps {
-        dir('demo') {
-          sh '''
-            set -e
-            chmod +x mvnw
-            ./mvnw -q -e -DtargetUrl="$TARGET_URL" test
-          '''
-        }
+        sh '''
+          set -e
+          mvn -q -e -f demo/pom.xml -DtargetUrl=${TARGET_URL} test
+        '''
       }
       post {
         always {
@@ -34,13 +32,9 @@ pipeline {
     }
 
     stage('Deploy') {
-      when {
-        expression { currentBuild.currentResult == 'SUCCESS' }
-      }
       steps {
-        echo "✅ URL erişilebilir. Deploy çalışıyor..."
-        // burada gerçek deploy komutun neyse:
-        // sh 'echo deploy...'
+        echo "Deploy çalıştı çünkü URL erişilebilir ve testler geçti."
+        // buraya deploy komutunu koyacaksın (ör: sh '...deploy...')
       }
     }
   }
