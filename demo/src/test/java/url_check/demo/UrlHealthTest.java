@@ -6,17 +6,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class UrlHealthTest {
 
     @Test
-    void exampleDotCom_shouldBeReachable() throws Exception {
+    void targetUrl_shouldReturn200() throws Exception {
         String targetUrl = System.getProperty("targetUrl", "https://example.com");
 
         int code = -1;
         Exception last = null;
 
-        // küçük retry (network dalgalanması için)
         for (int i = 0; i < 3; i++) {
             try {
                 HttpURLConnection con = (HttpURLConnection) new URL(targetUrl).openConnection();
@@ -34,12 +34,9 @@ class UrlHealthTest {
             }
         }
 
-        assertTrue(code == 401,
-        "URL erişilemedi! url=" + targetUrl + " status=" + code +
+        assertEquals(200, code,
+        "URL erişilemedi veya 200 dönmedi! url=" + targetUrl +
+                " status=" + code +
                 (last != null ? " lastError=" + last.getMessage() : ""));
-
     }
 }
-
-
-
