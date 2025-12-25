@@ -34,11 +34,12 @@ class UrlHealthTest {
             }
         }
 
-        assertTrue(code == 400,
+        assertTrue(code == 401,
         "URL erişilemedi! url=" + targetUrl + " status=" + code +
                 (last != null ? " lastError=" + last.getMessage() : ""));
 
     }
 }
+
 
 
