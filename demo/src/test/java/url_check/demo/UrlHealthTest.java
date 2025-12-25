@@ -7,18 +7,36 @@ import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+class UrlHealthTest {
 
-public class UrlHealthTest {
     @Test
-    void exampleDotComShouldBeReachable() throws Exception {
-        String target = "https://example.com";
-        HttpURLConnection conn = (HttpURLConnection) new URL(target).openConnection();
-        conn.setRequestMethod("GET");
-        conn.setInstanceFollowRedirects(true);
-        conn.setConnectTimeout(5000);
-        conn.setReadTimeout(5000);
-        int code = conn.getResponseCode();
+    void exampleDotCom_shouldBeReachable() throws Exception {
+        String targetUrl = System.getProperty("targetUrl", "https://example.com");
+
+        int code = -1;
+        Exception last = null;
+
+        // küçük retry (network dalgalanması için)
+        for (int i = 0; i < 3; i++) {
+            try {
+                HttpURLConnection con = (HttpURLConnection) new URL(targetUrl).openConnection();
+                con.setRequestMethod("GET");
+                con.setConnectTimeout(5000);
+                con.setReadTimeout(5000);
+                con.setInstanceFollowRedirects(true);
+
+                code = con.getResponseCode();
+                con.disconnect();
+                break;
+            } catch (Exception e) {
+                last = e;
+                Thread.sleep(1000);
+            }
+        }
+
+        // 2xx-3xx kabul
         assertTrue(code >= 200 && code < 400,
-                "URL erişilemez. HTTP code=" + code + " target=" + target);
+                "URL erişilemedi! url=" + targetUrl + " status=" + code +
+                        (last != null ? " lastError=" + last.getMessage() : ""));
     }
 }
