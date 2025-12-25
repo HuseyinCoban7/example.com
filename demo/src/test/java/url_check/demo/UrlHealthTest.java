@@ -34,10 +34,11 @@ class UrlHealthTest {
             }
         }
 
-        assertEquals(400, code,
+        assertEquals(200, code,
         "URL erişilemedi veya 200 dönmedi! url=" + targetUrl +
                 " status=" + code +
                 (last != null ? " lastError=" + last.getMessage() : ""));
     }
 }
+
 
