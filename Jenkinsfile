@@ -13,21 +13,19 @@ pipeline {
         }
 
         stage('URL Check (JUnit)') {
-            steps {
-                dir('demo') {
-                    sh '''
-                        set -e
-                        chmod +x mvnw
-                        ./mvnw -q -e -DtargetUrl=${TARGET_URL} test
-                    '''
-                }
-            }
-            post {
-                always {
-                    junit 'demo/target/surefire-reports/*.xml'
-                }
-            }
-        }
+  steps {
+    sh '''
+      set -e
+      chmod +x mvnw
+      ./mvnw -q -e -f demo/pom.xml -DtargetUrl=${TARGET_URL} test
+    '''
+  }
+  post {
+    always {
+      junit 'demo/target/surefire-reports/*.xml'
+    }
+  }
+}
 
         stage('Deploy') {
             steps {
