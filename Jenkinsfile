@@ -1,31 +1,46 @@
 pipeline {
-  agent none
+  agent any
+
+  environment {
+    TARGET_URL = 'https://example.com'
+  }
+
+  options {
+    timestamps()
+  }
 
   stages {
-    stage('URL Check (JUnit)') {
-      agent {
-        docker {
-          image 'maven:3.9.6-eclipse-temurin-17'
-          args '-v $HOME/.m2:/root/.m2'
-        }
-      }
+    stage('Checkout') {
       steps {
-        dir('url-check') {
-          sh 'mvn -q test'
+        checkout scm
+      }
+    }
+
+    stage('URL Check (JUnit)') {
+      steps {
+        dir('demo') {
+          sh '''
+            set -e
+            chmod +x mvnw
+            ./mvnw -q -e -DtargetUrl="$TARGET_URL" test
+          '''
         }
       }
       post {
         always {
-          junit 'url-check/target/surefire-reports/*.xml'
+          junit 'demo/target/surefire-reports/*.xml'
         }
       }
     }
 
     stage('Deploy') {
-      agent any
+      when {
+        expression { currentBuild.currentResult == 'SUCCESS' }
+      }
       steps {
-        echo 'Deploy çalıştı (URL erişilebilir olduğu için).'
-        // burada gerçek deploy komutların olur
+        echo "✅ URL erişilebilir. Deploy çalışıyor..."
+        // burada gerçek deploy komutun neyse:
+        // sh 'echo deploy...'
       }
     }
   }
